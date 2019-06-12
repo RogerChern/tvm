@@ -1286,14 +1286,19 @@ bool WhereRel(const Array<Type>& types,
     CHECK_EQ(cond_shape.size(), 1)
         << "Shape of condition " << condition->shape
         << " must be either equal to x or has dimension of 1.";
-  }
-  for (size_t i = 0; i < x_shape.size(); i++) {
-    CHECK(reporter->AssertEQ(x_shape[i], y_shape[i]))
-        << "x and y must have the same shape: " << x_shape << " vs " << y_shape;
+    for (size_t i = 0; i < x_shape.size(); i++) {
+        CHECK(reporter->AssertEQ(x_shape[i], y_shape[i]))
+            << "x and y must have the same shape: " << x_shape << " vs " << y_shape;
+    }
+  } else {
+    for (size_t i = 0; i < x_shape.size(); i++) {
+      CHECK(reporter->AssertEQ(x_shape[i], y_shape[i]))
+          << "x and y must have the same shape: " << x_shape << " vs " << y_shape;
 
-    CHECK(reporter->AssertEQ(cond_shape[i], x_shape[i]))
-        << "Shape of condition " << condition->shape
-        << " must be either equal to x or has dimension of 1.";
+      CHECK(reporter->AssertEQ(cond_shape[i], x_shape[i]))
+          << "Shape of condition " << condition->shape
+          << " must be either equal to x or has dimension of 1.";
+    }
   }
   reporter->Assign(types[3], TensorTypeNode::make(x_shape, x->dtype));
   return true;
