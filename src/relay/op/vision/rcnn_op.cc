@@ -41,11 +41,11 @@ bool ROIAlignRel(const Array<Type>& types, int num_inputs, const Attrs& attrs,
   const auto& rshape = rois->shape;
   CHECK(roi_align_attrs);
   CHECK_EQ(dshape.size(), 4) << "Input data should be 4-D.";
-  CHECK_EQ(rshape.size(), 2) << "Input rois should be 2-D.";
+  CHECK_EQ(rshape.size(), 3) << "Input rois should be 3-D.";
   CHECK_EQ(roi_align_attrs->layout, "NCHW") << "ROI Align only supports NCHW layout";
   // assign output type
   std::vector<IndexExpr> oshape(
-      {rshape[0], dshape[1], roi_align_attrs->pooled_size[0], roi_align_attrs->pooled_size[1]});
+      {rshape[0], rshape[1], dshape[1], roi_align_attrs->pooled_size[0], roi_align_attrs->pooled_size[1]});
   reporter->Assign(types[2], TensorTypeNode::make(oshape, data->dtype));
   return true;
 }
@@ -69,10 +69,10 @@ RELAY_REGISTER_OP("vision.roi_align")
 
  - **data**: This depends on the `layout` parameter. Input is 4D array of shape
              (batch_size, channels, height, width) if `layout` is `NCHW`.
- - **rois**: 2D array of shape (num_roi, 5). The last dimension should be in format of
-             [batch_index, w_start, h_start, w_end, h_end].
- - **out**: This depends on the `layout` parameter. Output is 4D array of shape
-            (num_roi, channels, pooled_height, pooled_width) if `layout` is `NCHW`.
+ - **rois**: 3D array of shape (num_img, num_roi, 4). The last dimension should be in format of
+             [w_start, h_start, w_end, h_end].
+ - **out**: This depends on the `layout` parameter. Output is 5D array of shape
+            (num_img, num_roi, channels, pooled_height, pooled_width) if `layout` is `NCHW`.
  )doc" TVM_ADD_FILELINE)
 .set_num_inputs(2)
 .add_argument("data", "Tensor", "The input tensor.")

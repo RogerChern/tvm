@@ -27,8 +27,8 @@ def roi_align(data, rois, pooled_size, spatial_scale, sample_ratio=-1, layout='N
         4-D tensor with shape [batch, channel, height, width]
 
     rois : relay.Expr
-        2-D tensor with shape [num_roi, 5]. The last dimension should be in format of
-        [batch_index, w_start, h_start, w_end, h_end]
+        3-D tensor with shape [num_img, num_roi, 4]. The last dimension should be in format of
+        [w_start, h_start, w_end, h_end]
 
     pooled_size : list/tuple of two ints
         output size
@@ -43,7 +43,7 @@ def roi_align(data, rois, pooled_size, spatial_scale, sample_ratio=-1, layout='N
     Returns
     -------
     output : relay.Expr
-        4-D tensor with shape [num_roi, channel, pooled_size, pooled_size]
+        5-D tensor with shape [num_img, num_roi, channel, pooled_size, pooled_size]
     """
     return _make.roi_align(data, rois, pooled_size, spatial_scale, sample_ratio, layout)
 

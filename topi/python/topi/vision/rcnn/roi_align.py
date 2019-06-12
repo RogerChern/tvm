@@ -31,8 +31,8 @@ def roi_align_nchw(data, rois, pooled_size, spatial_scale, sample_ratio=-1):
         4-D with shape [batch, channel, height, width]
 
     rois : tvm.Tensor
-        2-D with shape [num_roi, 5]. The last dimension should be in format of
-        [batch_index, w_start, h_start, w_end, h_end]
+        3-D with shape [num_img, num_roi, 4]. The last dimension should be in format of
+        [w_start, h_start, w_end, h_end]
 
     pooled_size : int or list/tuple of two ints
         output size, or [out_height, out_width]
@@ -47,11 +47,11 @@ def roi_align_nchw(data, rois, pooled_size, spatial_scale, sample_ratio=-1):
     Returns
     -------
     output : tvm.Tensor
-        4-D with shape [num_roi, channel, pooled_size, pooled_size]
+        5-D with shape [num_img, num_roi, channel, pooled_size, pooled_size]
     """
     dtype = rois.dtype
     _, channel, height, width = get_const_tuple(data.shape)
-    num_roi, _ = get_const_tuple(rois.shape)
+    num_img, num_roi, _ = get_const_tuple(rois.shape)
 
     if isinstance(pooled_size, int):
         pooled_size_h = pooled_size_w = pooled_size
@@ -65,10 +65,10 @@ def roi_align_nchw(data, rois, pooled_size, spatial_scale, sample_ratio=-1):
         val = bilinear_sample_nchw(data, (i, c, y, x), height - 1, width - 1)
         return tvm.if_then_else(outside, 0.0, val)
 
-    def _sample(i, c, ph, pw):
-        roi = rois[i]
-        batch_index = roi[0].astype('int32')
-        roi_start_w, roi_start_h, roi_end_w, roi_end_h = roi[1], roi[2], roi[3], roi[4]
+    def _sample(n, i, c, ph, pw):
+        roi = rois[n][i]
+        batch_index = n
+        roi_start_w, roi_start_h, roi_end_w, roi_end_h = roi[0], roi[1], roi[2], roi[3]
         roi_start_h *= spatial_scale
         roi_end_h *= spatial_scale
         roi_start_w *= spatial_scale
@@ -97,5 +97,5 @@ def roi_align_nchw(data, rois, pooled_size, spatial_scale, sample_ratio=-1):
                                  roi_start_w + (rw + 1.0) * bin_w / (roi_bin_grid_w + 1.0)),
                        axis=[rh, rw])
 
-    return tvm.compute((num_roi, channel, pooled_size_h, pooled_size_w), _sample,
+    return tvm.compute((num_img, num_roi, channel, pooled_size_h, pooled_size_w), _sample,
                        tag='pool,roi_align_nchw')

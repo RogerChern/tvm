@@ -523,19 +523,9 @@ def _mx_roi_align(inputs, attrs):
     new_attrs = {}
     new_attrs["pooled_size"] = attrs.get_int_tuple("pooled_size")
     new_attrs["spatial_scale"] = attrs.get_float("spatial_scale")
-    new_attrs["sample_ratio"] = attrs.get_int("sample_ratio", -1)
-    new_attrs["layout"] = "NCHW"
-    return _op.vision.roi_align(inputs[0], inputs[1], **new_attrs)
-
-
-def _mx_roi_align_v2(inputs, attrs):
-    new_attrs = {}
-    new_attrs["pooled_size"] = attrs.get_int_tuple("pooled_size")
-    new_attrs["spatial_scale"] = attrs.get_float("spatial_scale")
     new_attrs["sample_ratio"] = attrs.get_int("sample_ratio", 2)
     new_attrs["layout"] = "NCHW"
-    output = _op.vision.roi_align(inputs[0], inputs[1], **new_attrs)
-    return _op.expand_dims(output, axis=0)
+    return _op.vision.roi_align(inputs[0], inputs[1], **new_attrs)
 
 
 def _mx_resize(inputs, attrs):
@@ -982,8 +972,7 @@ _convert_map = {
     "_contrib_BilinearResize2D" : _mx_resize,
     "_contrib_MultiBoxPrior" : _mx_multibox_prior,
     "_contrib_MultiBoxDetection" : _mx_multibox_detection,
-    "_contrib_ROIAlign" : _mx_roi_align,
-    "_contrib_ROIAlign_v2": _mx_roi_align_v2,
+    "_contrib_ROIAlign_v2": _mx_roi_align,
     "ROIPooling"        : _mx_roi_pooling,
     "_contrib_Proposal" : _mx_proposal,
     "_contrib_MultiProposal" : _mx_proposal,
